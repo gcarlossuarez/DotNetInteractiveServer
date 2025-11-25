@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Probar DotNet Interactive Server</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+        }
+        textarea {
+            width: 100%;
+            height: 200px;
+            font-family: 'Courier New', monospace;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-top: 10px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        #output {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            white-space: pre-wrap;
+            font-family: 'Courier New', monospace;
+        }
+        .error {
+            background-color: #f8d7da;
+            border-color: #f5c6cb;
+            color: #721c24;
+        }
+    </style>
+</head>
+<body>
+    <h1>🚀 Probar DotNet Interactive Server</h1>
+    
+    <h3>Escribe código C#:</h3>
+    <textarea id="code">var line = Console.ReadLine();
+Console.WriteLine($"Leíste: {line}");
+Console.WriteLine("¡Hola C#!");</textarea>
+    
+    <h3>Entrada (stdin) - opcional:</h3>
+    <textarea id="stdin" style="height: 100px;">Hola desde stdin
+Segunda línea
+Tercera línea</textarea>
+    
+    <button onclick="ejecutarCodigo()">▶ Ejecutar</button>
+    
+    <h3>Salida:</h3>
+    <div id="output">Aquí aparecerá la salida...</div>
+
+    <script>
+        async function ejecutarCodigo() {
+            const code = document.getElementById('code').value;
+            const stdin = document.getElementById('stdin').value;
+            const outputDiv = document.getElementById('output');
+            
+            outputDiv.textContent = 'Ejecutando...';
+            outputDiv.className = '';
+            
+            try {
+                const response = await fetch('http://localhost:1100/execute', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ 
+                        code: code,
+                        stdin: stdin || null
+                    })
+                });
+                
+                const result = await response.json();
+                outputDiv.textContent = result.output || '(sin salida)';
+                
+            } catch (error) {
+                outputDiv.textContent = 'Error: ' + error.message;
+                outputDiv.className = 'error';
+            }
+        }
+    </script>
+</body>
+</html>

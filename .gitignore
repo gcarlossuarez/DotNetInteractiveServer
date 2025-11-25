@@ -1,0 +1,22 @@
+# Ignore build output and user-specific files
+bin/
+obj/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Ignore VS Code settings
+.vscode/
+
+# Ignore dataset and temp files
+Contests/
+*.tmp
+*.log
+
+# Ignore deployment zips and local archives
+Src_DotNetInteractiveServer.zip
+
+# Ignore OS generated files
+.DS_Store
+Thumbs.db

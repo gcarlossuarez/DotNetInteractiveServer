@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Streaming - Validación de Dataset</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 1200px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 { color: #333; margin-bottom: 10px; }
+        h2 { color: #666; font-size: 18px; margin-top: 30px; }
+        
+        textarea {
+            width: 100%;
+            height: 200px;
+            font-family: 'Courier New', monospace;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+        
+        input[type="text"] {
+            width: 300px;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+        
+        button {
+            background-color: #007bff;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px 5px 10px 0;
+        }
+        button:hover { background-color: #0056b3; }
+        button:disabled { background-color: #ccc; cursor: not-allowed; }
+        
+        .progress-bar {
+            width: 100%;
+            height: 30px;
+            background: #e0e0e0;
+            border-radius: 4px;
+            overflow: hidden;
+            margin: 20px 0;
+            display: none;
+        }
+        .progress-bar.active { display: block; }
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #4CAF50, #45a049);
+            width: 0%;
+            transition: width 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+        
+        .results {
+            margin-top: 20px;
+        }
+        .case-item {
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 4px;
+            border-left: 4px solid #ccc;
+            background: #f9f9f9;
+        }
+        .case-item.accepted { border-left-color: #4CAF50; background: #f1f8f4; }
+        .case-item.error { border-left-color: #f44336; background: #fef1f0; }
+        .case-item.wrong { border-left-color: #ff9800; background: #fff8f0; }
+        .case-item.timelimit { border-left-color: #9c27b0; background: #f9f1fb; }
+        
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+            background: #e3f2fd;
+            color: #1976d2;
+            display: none;
+        }
+        .status.active { display: block; }
+        
+        .diff {
+            font-family: 'Courier New', monospace;
+            background: #fff3cd;
+            padding: 10px;
+            border-radius: 4px;
+            margin-top: 5px;
+            font-size: 12px;
+            white-space: pre-wrap;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚀 Test de Validación con Streaming</h1>
+        <p>Este ejemplo muestra el progreso en tiempo real mientras se valida el dataset.</p>
+        
+        <h2>📝 Código C#:</h2>
+        <textarea id="code">// Ejemplo: Leer dos números y sumar
+var nums = Console.ReadLine()?.Split();
+if (nums != null && nums.Length == 2)
+{
+    int a = int.Parse(nums[0]);
+    int b = int.Parse(nums[1]);
+    Console.WriteLine(a + b);
+}</textarea>
+        
+        <label for="problemId"><strong>🎯 Problem ID:</strong></label><br>
+        <input type="text" id="problemId" placeholder="Ejemplo: Problem001" value="Problem001">
+        
+        <br><br>
+        <button id="btnStream" onclick="validateWithStreaming()">▶ Validar con Streaming (Tiempo Real)</button>
+        <button id="btnNormal" onclick="validateNormal()">▶ Validar Normal (Sin Streaming)</button>
+        <button id="btnStop" onclick="stopStreaming()" disabled style="background-color: #dc3545;">⏹ Detener</button>
+        
+        <div class="status" id="status">Esperando...</div>
+        
+        <div class="progress-bar" id="progressBar">
+            <div class="progress-fill" id="progressFill">0%</div>
+        </div>
+        
+        <h2>📊 Resultados:</h2>
+        <div class="results" id="results"></div>
+    </div>
+
+    <script>
+        let eventSource = null;
+
+        function validateWithStreaming() {
+            const code = document.getElementById('code').value;
+            const problemId = document.getElementById('problemId').value;
+            
+            if (!problemId.trim()) {
+                alert('Por favor ingresa un Problem ID');
+                return;
+            }
+            
+            // Limpiar resultados previos
+            document.getElementById('results').innerHTML = '';
+            document.getElementById('progressBar').classList.add('active');
+            document.getElementById('progressFill').style.width = '0%';
+            document.getElementById('progressFill').textContent = '0%';
+            document.getElementById('status').classList.add('active');
+            document.getElementById('status').textContent = '🔄 Iniciando validación...';
+            
+            document.getElementById('btnStream').disabled = true;
+            document.getElementById('btnNormal').disabled = true;
+            document.getElementById('btnStop').disabled = false;
+            
+            // Usar fetch con streaming
+            fetch('http://localhost:1100/validate-dataset', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'text/event-stream'  // ✨ Esto activa el streaming
+                },
+                body: JSON.stringify({ 
+                    code: code,
+                    problem: problemId,
+                    timeoutMs: 5000
+                })
+            }).then(response => {
+                const reader = response.body.getReader();
+                const decoder = new TextDecoder();
+                let buffer = '';
+                
+                function processStream() {
+                    reader.read().then(({ done, value }) => {
+                        if (done) {
+                            console.log('Stream completado');
+                            document.getElementById('btnStream').disabled = false;
+                            document.getElementById('btnNormal').disabled = false;
+                            document.getElementById('btnStop').disabled = true;
+                            return;
+                        }
+                        
+                        buffer += decoder.decode(value, { stream: true });
+                        const lines = buffer.split('\n');
+                        buffer = lines.pop() || '';
+                        
+                        for (const line of lines) {
+                            if (line.startsWith('event:')) {
+                                const eventType = line.substring(6).trim();
+                                const dataLineIndex = lines.indexOf(line) + 1;
+                                if (dataLineIndex < lines.length && lines[dataLineIndex].startsWith('data:')) {
+                                    const data = JSON.parse(lines[dataLineIndex].substring(5).trim());
+                                    handleSSEEvent(eventType, data);
+                                }
+                            }
+                        }
+                        
+                        processStream();
+                    });
+                }
+                
+                processStream();
+            }).catch(err => {
+                console.error('Error:', err);
+                document.getElementById('status').textContent = '❌ Error: ' + err.message;
+                document.getElementById('btnStream').disabled = false;
+                document.getElementById('btnNormal').disabled = false;
+                document.getElementById('btnStop').disabled = true;
+            });
+        }
+        
+        function handleSSEEvent(eventType, data) {
+            const resultsDiv = document.getElementById('results');
+            const statusDiv = document.getElementById('status');
+            
+            if (eventType === 'start') {
+                statusDiv.textContent = `🚀 Iniciando validación de ${data.totalCases} casos para ${data.problem}...`;
+            }
+            else if (eventType === 'case-result') {
+                const percent = Math.round((data.caseNumber / data.totalCases) * 100);
+                document.getElementById('progressFill').style.width = percent + '%';
+                document.getElementById('progressFill').textContent = percent + '%';
+                
+                statusDiv.textContent = `⏳ Procesando caso ${data.caseNumber}/${data.totalCases}: ${data.caseName}`;
+                
+                const caseDiv = document.createElement('div');
+                caseDiv.className = 'case-item ' + getResultClass(data.result);
+                
+                let html = `
+                    <strong>${data.caseName}</strong> → 
+                    <span style="font-weight: bold;">${data.result}</span> 
+                    <span style="color: #666;">(${data.timeMs}ms)</span>
+                `;
+                
+                if (data.diff) {
+                    html += `<div class="diff">${escapeHtml(data.diff)}</div>`;
+                }
+                
+                caseDiv.innerHTML = html;
+                resultsDiv.appendChild(caseDiv);
+            }
+            else if (eventType === 'complete') {
+                statusDiv.textContent = `✅ Validación completada - ${data.totalCases} casos procesados`;
+                statusDiv.style.background = '#d4edda';
+                statusDiv.style.color = '#155724';
+            }
+        }
+        
+        function getResultClass(result) {
+            switch(result) {
+                case 'Accepted': return 'accepted';
+                case 'Error': return 'error';
+                case 'Wrong Answer': return 'wrong';
+                case 'Time Limit': return 'timelimit';
+                default: return '';
+            }
+        }
+        
+        function validateNormal() {
+            const code = document.getElementById('code').value;
+            const problemId = document.getElementById('problemId').value;
+            
+            if (!problemId.trim()) {
+                alert('Por favor ingresa un Problem ID');
+                return;
+            }
+            
+            document.getElementById('results').innerHTML = '';
+            document.getElementById('progressBar').classList.remove('active');
+            document.getElementById('status').classList.add('active');
+            document.getElementById('status').textContent = '⏳ Validando... (sin streaming)';
+            
+            document.getElementById('btnStream').disabled = true;
+            document.getElementById('btnNormal').disabled = true;
+            
+            fetch('http://localhost:1100/validate-dataset', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                    // Sin Accept: text/event-stream = modo tradicional
+                },
+                body: JSON.stringify({ 
+                    code: code,
+                    problem: problemId,
+                    timeoutMs: 5000
+                })
+            })
+            .then(res => {
+                if (!res.ok) {
+                    throw new Error(`HTTP ${res.status}: ${res.statusText}`);
+                }
+                return res.json();
+            })
+            .then(data => {
+                // Asegurarse de que data sea un array
+                const results = Array.isArray(data) ? data : [];
+                
+                document.getElementById('status').textContent = `✅ Validación completada - ${results.length} casos`;
+                document.getElementById('status').style.background = '#d4edda';
+                document.getElementById('status').style.color = '#155724';
+                
+                const resultsDiv = document.getElementById('results');
+                results.forEach(r => {
+                    const caseDiv = document.createElement('div');
+                    caseDiv.className = 'case-item ' + getResultClass(r.Result);
+                    
+                    let html = `
+                        <strong>${r.Case}</strong> → 
+                        <span style="font-weight: bold;">${r.Result}</span> 
+                        <span style="color: #666;">(${r.TimeMs}ms)</span>
+                    `;
+                    
+                    if (r.Diff) {
+                        html += `<div class="diff">${escapeHtml(r.Diff)}</div>`;
+                    }
+                    
+                    caseDiv.innerHTML = html;
+                    resultsDiv.appendChild(caseDiv);
+                });
+                
+                document.getElementById('btnStream').disabled = false;
+                document.getElementById('btnNormal').disabled = false;
+            })
+            .catch(err => {
+                console.error('Error completo:', err);
+                document.getElementById('status').textContent = '❌ Error: ' + err.message;
+                document.getElementById('status').style.background = '#f8d7da';
+                document.getElementById('status').style.color = '#721c24';
+                document.getElementById('btnStream').disabled = false;
+                document.getElementById('btnNormal').disabled = false;
+            });
+        }
+        
+        function stopStreaming() {
+            if (eventSource) {
+                eventSource.close();
+                eventSource = null;
+            }
+            document.getElementById('status').textContent = '⏹ Detenido por el usuario';
+            document.getElementById('btnStream').disabled = false;
+            document.getElementById('btnNormal').disabled = false;
+            document.getElementById('btnStop').disabled = true;
+        }
+        
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+    </script>
+</body>
+</html>
