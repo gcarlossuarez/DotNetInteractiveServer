@@ -10,5 +10,5 @@ git pull --rebase origin main
 git push origin main
 
 echo.
-echo Push completado. Presiona una tecla para salir.
+echo Push completed. Press any key to exit.
 pause >nul
