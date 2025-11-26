@@ -70,9 +70,9 @@ app.UseCors();
 //   GET  /ping                     → Verifica que el servidor esté vivo
 //   GET  /info                     → Información del sistema (.NET, OS)
 //   GET  /version                  → Versión de la aplicación
-//   POST /execute                  → Ejecuta código C# (con timeout)
+//   POST /execute                  → Ejecuta código C# (con timeout, en memoria)
 //   POST /reset                    → Libera memoria (GC.Collect)
-//   POST /upload-dataset           → Sube archivos de prueba
+//   POST /upload-dataset           → Sube archivos de prueba (datasets y validador)
 //   GET  /datasets                 → Lista todos los datasets
 //   GET  /datasets/{problemId}     → Info de un dataset específico
 //   POST /validate-dataset         → Valida código contra dataset (SSE/JSON)
@@ -212,6 +212,13 @@ app.MapPost("/upload-dataset", async (HttpContext ctx) =>
         var safePath = f.Path.Replace("..", "").Replace("\\", "/").TrimStart('/');
         var fullPath = Path.Combine(basePath, safePath);
 
+        // Si el archivo es del validador, asegurar directorio Validator
+        if (safePath.StartsWith("Validator/", StringComparison.OrdinalIgnoreCase))
+        {
+            var validatorDir = Path.Combine(basePath, "Validator");
+            Directory.CreateDirectory(validatorDir);
+        }
+
         var dir = Path.GetDirectoryName(fullPath);
         if (!string.IsNullOrEmpty(dir))
             Directory.CreateDirectory(dir);
@@ -298,6 +305,7 @@ app.MapDelete("/datasets/{problemId}", (string problemId) =>
     }
 
     string basePath = Path.Combine(AppContext.BaseDirectory, "Contests", problemId);
+    string validatorDir = Path.Combine(basePath, "Validator");
 
     if (!Directory.Exists(basePath))
     {
@@ -309,8 +317,11 @@ app.MapDelete("/datasets/{problemId}", (string problemId) =>
 
     try
     {
-        // 🗑️ Eliminar directorio completo recursivamente
+        // 🗑️ Eliminar directorio completo recursivamente (incluye Validator)
         Directory.Delete(basePath, recursive: true);
+        // Por si acaso Validator/ quedó fuera (raro, pero seguro)
+        if (Directory.Exists(validatorDir))
+            Directory.Delete(validatorDir, recursive: true);
         
         return Results.Json(new { 
             ok = true, 
@@ -350,6 +361,40 @@ app.MapDelete("/datasets/{problemId}", (string problemId) =>
 // │    Contests/{problemId}/.Expected/Output_datos001.txt       │
 // └─────────────────────────────────────────────────────────────┘
 app.MapPost("/validate-dataset", async (
+    // ═══════════════════════════════════════════════════════════════
+    // 📚 DIAGRAMA DE VALIDACIÓN CON VALIDATOR OPCIONAL
+    // ═══════════════════════════════════════════════════════════════
+    //
+    // ┌──────────────────────────────────────────────────────────────────────────────┐
+    // │ 1. Recibe código y problemId                                                 │
+    // │ 2. Busca DataSet, .Expected y (opcional) Validator/ en Contests/{problemId}  │
+    // │ 3. Si hay Validator/:                                                        │
+    // │    ┌──────────────────────────────────────────────────────────────────────┐  │
+    // │    │ a) Copia Validator/ y .csproj a un directorio temporal seguro         │  │
+    // │    │    (ej: %TEMP%/DotNetValidatorBuilds/{problemId})                     │  │
+    // │    │ b) Fuerza TargetFramework a net10.0 en el .csproj temporal            │  │
+    // │    │ c) Compila el validador en el temporal (dotnet build)                 │  │
+    // │    │ d) Por cada caso:                                                     │  │
+    // │    │    - Ejecuta código del alumno (en memoria, sin archivos)             │  │
+    // │    │    - Guarda output generado                                           │  │
+    // │    │    - Ejecuta validator.dll temporal con: input, expected, output      │  │
+    // │    │    - Si imprime 'OK' → Accepted                                       │  │
+    // │    │    - Si imprime otro → Validator Error/Runtime                        │  │
+    // │    └──────────────────────────────────────────────────────────────────────┘  │
+    // │ 4. Si NO hay Validator/:                                                    │
+    // │    - Compara output generado vs expected                                   │
+    // │    - Accepted/Wrong Answer/Error/Time Limit                                │
+    // └──────────────────────────────────────────────────────────────────────────────┘
+    //
+    //  NOTA: Los archivos del dataset (inputs/expected) permanecen en Contests/{problemId}.
+    //        Solo el validador se vuelve a copiar y compilar en un directorio temporal seguro.
+
+        // ═══════════════════════════════════════════════════════════════
+        // 📝 INICIO DE LÓGICA DE VALIDACIÓN AVANZADA
+        // - Soporta validadores personalizados por problema
+        // - Compila y ejecuta el validador si existe
+        // - Si no, usa comparación tradicional
+        // ═══════════════════════════════════════════════════════════════
     HttpContext ctx,
     CancellationToken cancellationToken) => // ⬅️ ADD THIS PARAMETER
 {
@@ -372,16 +417,147 @@ app.MapPost("/validate-dataset", async (
     string basePath = Path.Combine(AppContext.BaseDirectory, "Contests", input.Problem);
     string datasetDir = Path.Combine(basePath, "DataSet");
     string expectedDir = Path.Combine(basePath, ".Expected");
-    
+    string validatorDir = Path.Combine(basePath, "Validator");
+    string validatorProj = Directory.Exists(validatorDir) ? Directory.GetFiles(validatorDir, "*.csproj").FirstOrDefault() ?? "" : "";
+    string validatorDll = validatorProj != "" ? Path.Combine(validatorDir, "bin", "Debug", "net10.0", Path.GetFileNameWithoutExtension(validatorProj) + ".dll") : "";
+
     // 🐛 DEBUG: Log de rutas construidas
     Console.WriteLine($"📂 DataSet path: {datasetDir}");
     Console.WriteLine($"📂 Expected path: {expectedDir}");
+    if (validatorProj != "") Console.WriteLine($"📂 Validator project: {validatorProj}");
 
     if (!Directory.Exists(datasetDir))
         return Results.BadRequest($"DataSet not found for problem {input.Problem}");
 
     if (!Directory.Exists(expectedDir))
         return Results.BadRequest($"Expected not found for problem {input.Problem}");
+
+    // Si hay validador, forzar TargetFramework y compilarlo (solo si hay cambios)
+    if (validatorProj != "" && File.Exists(validatorProj))
+    {
+        // ──────────────────────────────────────────────────────────
+        // 🛡️ FORZAR TargetFramework A net10.0 EN EL .csproj DEL VALIDADOR (XML seguro)
+        // - Usa System.Xml.Linq para modificar el XML de forma robusta
+        // - Así evitamos problemas de SDKs faltantes y unificamos entorno
+        // ──────────────────────────────────────────────────────────
+        // ──────────────────────────────────────────────────────────
+        // 🛡️ Compilar y ejecutar el validador en un directorio temporal fuera del workspace principal
+        // - Así se evita cualquier conflicto de build y se permite cualquier nombre de clase
+        // - El directorio temporal es %TEMP%/DotNetValidatorBuilds/{problemId}
+        // ──────────────────────────────────────────────────────────
+
+        // Si el cliente quiere SSE, avisar que se está compilando el validador
+        /*bool wantsStreamingAux = ctx.Request.Headers["Accept"].ToString().Contains("text/event-stream");
+        StreamWriter? sseWriter = null;
+        if (wantsStreamingAux)
+        {
+            // Asegurar que los headers se establecen solo una vez y antes de cualquier escritura
+            if (!ctx.Response.HasStarted)
+            {
+                ctx.Response.Headers["Content-Type"] = "text/event-stream";
+                ctx.Response.Headers["Cache-Control"] = "no-cache";
+                ctx.Response.Headers["Connection"] = "keep-alive";
+            }
+            sseWriter = new StreamWriter(ctx.Response.Body, Encoding.UTF8, leaveOpen: true);
+            await SendSSE(sseWriter, "validator-build", new { message = $"Compilando validador para '{input.Problem}'..." }, cancellationToken);
+            await sseWriter.FlushAsync(cancellationToken);
+        }*/
+
+        string tempValidatorRoot = Path.Combine(Path.GetTempPath(), "DotNetValidatorBuilds", input.Problem);
+        // Eliminar y esperar a que el directorio se libere realmente
+        if (Directory.Exists(tempValidatorRoot))
+        {
+            int retries = 5;
+            while (retries-- > 0)
+            {
+                try { Directory.Delete(tempValidatorRoot, true); break; }
+                catch { System.Threading.Thread.Sleep(200); }
+            }
+            if (Directory.Exists(tempValidatorRoot))
+                throw new IOException($"No se pudo eliminar el directorio temporal: {tempValidatorRoot}");
+        }
+        // Crear y validar existencia
+        Directory.CreateDirectory(tempValidatorRoot);
+        int createTries = 5;
+        while (!Directory.Exists(tempValidatorRoot) && createTries-- > 0)
+            System.Threading.Thread.Sleep(100);
+        if (!Directory.Exists(tempValidatorRoot))
+            throw new IOException($"No se pudo crear el directorio temporal: {tempValidatorRoot}");
+
+        // Copiar todos los archivos del validador al temporal, validando cada copia
+        foreach (var file in Directory.GetFiles(validatorDir, "*", SearchOption.AllDirectories))
+        {
+            var relPath = Path.GetRelativePath(validatorDir, file);
+            var destPath = Path.Combine(tempValidatorRoot, relPath);
+            Directory.CreateDirectory(Path.GetDirectoryName(destPath)!);
+            File.Copy(file, destPath, true);
+            int fileTries = 5;
+            while (!File.Exists(destPath) && fileTries-- > 0)
+                System.Threading.Thread.Sleep(50);
+            if (!File.Exists(destPath))
+                throw new IOException($"No se pudo copiar el archivo del validador: {destPath}");
+        }
+        // Forzar TargetFramework a net10.0 en el .csproj copiado
+        var tempValidatorProj = Directory.GetFiles(tempValidatorRoot, "*.csproj").FirstOrDefault() ?? "";
+        if (tempValidatorProj != "")
+        {
+            try
+            {
+                var xdoc = System.Xml.Linq.XDocument.Load(tempValidatorProj);
+                var ns = xdoc.Root?.Name.Namespace ?? System.Xml.Linq.XNamespace.None;
+                var tfElem = xdoc.Descendants(ns + "TargetFramework").FirstOrDefault();
+                if (tfElem != null && tfElem.Value.Trim() != "net10.0")
+                {
+                    string currentTF = tfElem.Value.Trim();
+                    tfElem.Value = "net10.0";
+                    xdoc.Save(tempValidatorProj);
+                    Console.WriteLine($"⚡ TargetFramework del validador actualizado a net10.0 (era: {currentTF})");
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"⚠️ Error actualizando TargetFramework en validator: {ex.Message}");
+            }
+        }
+        // Compilar el validador en el temporal
+        var tempValidatorDll = tempValidatorProj != "" ? Path.Combine(Path.GetDirectoryName(tempValidatorProj)!, "bin", "Debug", "net10.0", Path.GetFileNameWithoutExtension(tempValidatorProj) + ".dll") : "";
+        var validatorBuildInfo = Path.Combine(tempValidatorRoot, ".lastbuild");
+        var validatorProjTime = File.GetLastWriteTimeUtc(tempValidatorProj);
+        var needBuild = true;
+        if (File.Exists(validatorBuildInfo))
+        {
+            var lastBuild = File.ReadAllText(validatorBuildInfo).Trim();
+            if (DateTime.TryParse(lastBuild, out var lastBuildTime))
+            {
+                if (validatorProjTime <= lastBuildTime && Directory.Exists(Path.GetDirectoryName(tempValidatorDll)) && File.Exists(tempValidatorDll))
+                    needBuild = false;
+            }
+        }
+        if (needBuild)
+        {
+            Console.WriteLine($"🔨 Compilando validador en temporal: {tempValidatorProj}");
+            var psi = new System.Diagnostics.ProcessStartInfo("dotnet", $"build \"{tempValidatorProj}\" --nologo")
+            {
+                WorkingDirectory = tempValidatorRoot,
+                RedirectStandardOutput = true,
+                RedirectStandardError = true,
+                UseShellExecute = false,
+                CreateNoWindow = true
+            };
+            var proc = System.Diagnostics.Process.Start(psi);
+            string buildOut = await proc.StandardOutput.ReadToEndAsync();
+            string buildErr = await proc.StandardError.ReadToEndAsync();
+            proc.WaitForExit();
+            if (proc.ExitCode != 0 || !File.Exists(tempValidatorDll))
+            {
+                return Results.BadRequest($"Validator build failed:\n{buildOut}\n{buildErr}");
+            }
+            File.WriteAllText(validatorBuildInfo, DateTime.UtcNow.ToString("o"));
+        }
+        // Actualizar la ruta del .dll a ejecutar
+        validatorDll = tempValidatorDll;
+        validatorDir = tempValidatorRoot;
+    }
 
     var files = Directory.GetFiles(datasetDir, "datos*.txt").OrderBy(f => f).ToList();
     int totalCases = files.Count;
@@ -405,8 +581,15 @@ app.MapPost("/validate-dataset", async (
             // Evento inicial: Total de casos
             await SendSSE(writer, "start", new { totalCases, problem = input.Problem }, cancellationToken);
 
+
             int caseIndex = 0;
             foreach (var inputFile in files)
+                        // ──────────────────────────────────────────────────────
+                        // 🔄 Proceso por cada caso de prueba
+                        // - Ejecuta código del alumno
+                        // - Si hay validador, ejecuta validador.dll
+                        // - Si no, compara output vs expected
+                        // ──────────────────────────────────────────────────────
             {
                 // ✅ CHECK FOR CANCELLATION
                 if (cancellationToken.IsCancellationRequested)
@@ -425,15 +608,66 @@ app.MapPost("/validate-dataset", async (
 
                 var (stdout, stderr, timeMs) = await RunSingleCase(input.Code, stdin, input.TimeoutMs);
 
-                string verdict;
-                if (!string.IsNullOrEmpty(stderr))
-                    verdict = "Error";
-                else if (stdout.Trim() == expected.Trim())
-                    verdict = "Accepted";
-                else if (stdout.Contains("Tiempo límite excedido"))
-                    verdict = "Time Limit";
-                else
-                    verdict = "Wrong Answer";
+                string verdict = null;
+                string validatorOutput = null;
+                // Si hay validador, usarlo
+                if (validatorProj != "" && File.Exists(validatorDll))
+                                // ────────────────────────────────────────────────
+                                // ▶️ EJECUCIÓN DEL VALIDADOR
+                                // dotnet {validatorDll} input expected output
+                                // Espera 'OK' en stdout para Accepted
+                                // Cualquier otro output = error de validación
+                                // ────────────────────────────────────────────────
+                {
+                    // Guardar el output generado por el estudiante en un archivo temporal
+                    var tempOutDir = Path.Combine(basePath, ".TempOutputs");
+                    Directory.CreateDirectory(tempOutDir);
+                    var tempOutFile = Path.Combine(tempOutDir, $"output_{name}");
+                    await File.WriteAllTextAsync(tempOutFile, stdout, Encoding.UTF8, cancellationToken);
+
+                    // Ejecutar el validador: dotnet run --project Validator/Validator.csproj input expected output
+                    var psi = new System.Diagnostics.ProcessStartInfo("dotnet", $"{validatorDll} \"{inputFile}\" \"{expectedFile}\" \"{tempOutFile}\"")
+                    {
+                        WorkingDirectory = validatorDir,
+                        RedirectStandardOutput = true,
+                        RedirectStandardError = true,
+                        UseShellExecute = false,
+                        CreateNoWindow = true
+                    };
+                    var proc = System.Diagnostics.Process.Start(psi);
+                    string valOut = await proc.StandardOutput.ReadToEndAsync();
+                    string valErr = await proc.StandardError.ReadToEndAsync();
+                    proc.WaitForExit();
+                    validatorOutput = (valOut + valErr).Trim();
+                    if (proc.ExitCode == 0 && validatorOutput == "OK")
+                    {
+                        verdict = "Accepted";
+                    }
+                    else if (proc.ExitCode == 0)
+                    {
+                        verdict = "Validator Error";
+                    }
+                    else
+                    {
+                        verdict = "Validator Runtime Error";
+                    }
+                }
+                // Si no hay validador, usar lógica tradicional
+                if (verdict == null)
+                                // ────────────────────────────────────────────────
+                                // ▶️ VALIDACIÓN TRADICIONAL (sin validador)
+                                // Compara output generado vs expected
+                                // ────────────────────────────────────────────────
+                {
+                    if (!string.IsNullOrEmpty(stderr))
+                        verdict = "Error";
+                    else if (stdout.Trim() == expected.Trim())
+                        verdict = "Accepted";
+                    else if (stdout.Contains("Tiempo límite excedido"))
+                        verdict = "Time Limit";
+                    else
+                        verdict = "Wrong Answer";
+                }
 
                 // Enviar evento por cada caso procesado
                 await SendSSE(writer, "case-result", new
@@ -443,7 +677,8 @@ app.MapPost("/validate-dataset", async (
                     caseName = name,
                     result = verdict,
                     timeMs,
-                    diff = (verdict == "Wrong Answer") ? BuildDiff(expected, stdout) : ""
+                    diff = (verdict == "Wrong Answer") ? BuildDiff(expected, stdout) : "",
+                    validatorOutput
                 }, cancellationToken);
             }
 
@@ -496,22 +731,71 @@ app.MapPost("/validate-dataset", async (
 
             var (stdout, stderr, timeMs) = await RunSingleCase(input.Code, stdin, input.TimeoutMs);
 
-            string verdict;
-            if (!string.IsNullOrEmpty(stderr))
-                verdict = "Error";
-            else if (stdout.Trim() == expected.Trim())
-                verdict = "Accepted";
-            else if (stdout.Contains("Tiempo límite excedido"))
-                verdict = "Time Limit";
-            else
-                verdict = "Wrong Answer";
+            string verdict = null;
+            string validatorOutput = null;
+            // Si hay validador, usarlo
+            if (validatorProj != "" && File.Exists(validatorDll))
+            {
+                // Guardar el output generado por el estudiante en un archivo temporal
+                var tempOutDir = Path.Combine(basePath, ".TempOutputs");
+                Directory.CreateDirectory(tempOutDir);
+                var tempOutFile = Path.Combine(tempOutDir, $"output_{name}");
+                await File.WriteAllTextAsync(tempOutFile, stdout, Encoding.UTF8, cancellationToken);
+
+                // Ejecutar el validador: dotnet run --project Validator/Validator.csproj input expected output
+                var psi = new System.Diagnostics.ProcessStartInfo("dotnet", $"{validatorDll} \"{inputFile}\" \"{expectedFile}\" \"{tempOutFile}\"")
+                {
+                    WorkingDirectory = validatorDir,
+                    RedirectStandardOutput = true,
+                    RedirectStandardError = true,
+                    UseShellExecute = false,
+                    CreateNoWindow = true
+                };
+                var proc = System.Diagnostics.Process.Start(psi);
+                string valOut = await proc.StandardOutput.ReadToEndAsync();
+                string valErr = await proc.StandardError.ReadToEndAsync();
+                proc.WaitForExit();
+                validatorOutput = (valOut + valErr).Trim();
+                if (proc.ExitCode == 0 && validatorOutput == "OK")
+                {
+                    verdict = "Accepted";
+                }
+                else if (proc.ExitCode == 0)
+                {
+                    verdict = "Validator Error";
+                }
+                else
+                {
+                    verdict = "Validator Runtime Error";
+                }
+            }
+            // Si no hay validador, usar lógica tradicional
+            if (verdict == null)
+            {
+                if (!string.IsNullOrEmpty(stderr))
+                    verdict = "Error";
+                else if (stdout.Trim() == expected.Trim())
+                    verdict = "Accepted";
+                else if (stdout.Contains("Tiempo límite excedido"))
+                    verdict = "Time Limit";
+                else
+                    verdict = "Wrong Answer";
+            }
 
             results.Add(new
+                        // ──────────────────────────────────────────────────
+                        // 📤 Resultado enriquecido: incluye output del validador
+                        // ──────────────────────────────────────────────────
+                        // ──────────────────────────────────────────────────
+                        // 📡 SSE: Envío de resultados en tiempo real
+                        // Incluye output del validador si existe
+                        // ──────────────────────────────────────────────────
             {
                 Case = name,
                 Result = verdict,
                 TimeMs = timeMs,
-                Diff = (verdict == "Wrong Answer") ? BuildDiff(expected, stdout) : ""
+                Diff = (verdict == "Wrong Answer") ? BuildDiff(expected, stdout) : "",
+                ValidatorOutput = validatorOutput
             });
         }
 
