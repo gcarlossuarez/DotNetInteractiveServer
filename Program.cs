@@ -99,7 +99,7 @@ app.MapGet("/version", () =>
 });
 
 // ┌─────────────────────────────────────────────────────────────┐
-// │ 📚 ENDPOINT CRÍTICO: /execute                                │
+// │ BOOKMAR: 📚 ENDPOINT CRÍTICO: /execute                                │
 // ├─────────────────────────────────────────────────────────────┤
 // │ Flujo de ejecución:                                          │
 // │   1. Validar input (código no vacío)                         │
@@ -131,7 +131,6 @@ app.MapPost("/execute", async (Request input) =>
         {
             switch (e)
             {
-                
                 case StandardOutputValueProduced std:
                     // 🖨️ Console.WriteLine() o Console.Write()
                     var stdValue = std.FormattedValues.FirstOrDefault()?.Value;
@@ -340,7 +339,7 @@ app.MapDelete("/datasets/{problemId}", (string problemId) =>
 });
 
 // ┌─────────────────────────────────────────────────────────────┐
-// │ 📚 ENDPOINT AVANZADO: /validate-dataset                     │
+// │ 📚 BOOKMAR: ENDPOINT AVANZADO: /validate-dataset                     │
 // ├─────────────────────────────────────────────────────────────┤
 // │ Dual-mode endpoint: SSE streaming + JSON tradicional        │
 // │                                                             │
@@ -415,6 +414,9 @@ app.MapPost("/validate-dataset", async (
 
     // Construimos rutas específicas al problema
     string basePath = Path.Combine(AppContext.BaseDirectory, "Contests", input.Problem);
+    string auxCodeStudentPath =
+     Path.Combine(Path.Combine(basePath, "AUX_STUDENT_CODE_PATH"),
+                 ".TempStudentCode.cs");
     string datasetDir = Path.Combine(basePath, "DataSet");
     string expectedDir = Path.Combine(basePath, ".Expected");
     string validatorDir = Path.Combine(basePath, "Validator");
@@ -484,7 +486,7 @@ app.MapPost("/validate-dataset", async (
         if (!Directory.Exists(tempValidatorRoot))
             throw new IOException($"No se pudo crear el directorio temporal: {tempValidatorRoot}");
 
-        // Copiar todos los archivos del validador al temporal, validando cada copia
+        // BOOKMARK: Copiar todos los archivos del validador al temporal, validando cada copia
         foreach (var file in Directory.GetFiles(validatorDir, "*", SearchOption.AllDirectories))
         {
             var relPath = Path.GetRelativePath(validatorDir, file);
@@ -497,7 +499,7 @@ app.MapPost("/validate-dataset", async (
             if (!File.Exists(destPath))
                 throw new IOException($"No se pudo copiar el archivo del validador: {destPath}");
         }
-        // Forzar TargetFramework a net10.0 en el .csproj copiado
+        // BOOKMARK: Forzar TargetFramework a net10.0 en el .csproj copiado del validador
         var tempValidatorProj = Directory.GetFiles(tempValidatorRoot, "*.csproj").FirstOrDefault() ?? "";
         if (tempValidatorProj != "")
         {
@@ -519,7 +521,7 @@ app.MapPost("/validate-dataset", async (
                 Console.WriteLine($"⚠️ Error actualizando TargetFramework en validator: {ex.Message}");
             }
         }
-        // Compilar el validador en el temporal
+        // BOOKMARK: Compilar el validador en el temporal
         var tempValidatorDll = tempValidatorProj != "" ? Path.Combine(Path.GetDirectoryName(tempValidatorProj)!, "bin", "Debug", "net10.0", Path.GetFileNameWithoutExtension(tempValidatorProj) + ".dll") : "";
         var validatorBuildInfo = Path.Combine(tempValidatorRoot, ".lastbuild");
         var validatorProjTime = File.GetLastWriteTimeUtc(tempValidatorProj);
@@ -567,7 +569,7 @@ app.MapPost("/validate-dataset", async (
 
     if (wantsStreaming)
     {
-        // ✨ MODO STREAMING: Enviar eventos en tiempo real
+        // BOOKMARK: ✨ MODO STREAMING: Enviar eventos en tiempo real
         ctx.Response.Headers["Content-Type"] = "text/event-stream";
         ctx.Response.Headers["Cache-Control"] = "no-cache";
         ctx.Response.Headers["Connection"] = "keep-alive";
@@ -585,7 +587,7 @@ app.MapPost("/validate-dataset", async (
             int caseIndex = 0;
             foreach (var inputFile in files)
                         // ──────────────────────────────────────────────────────
-                        // 🔄 Proceso por cada caso de prueba
+                        // BOOKMARK: 🔄 Proceso por cada caso de prueba
                         // - Ejecuta código del alumno
                         // - Si hay validador, ejecuta validador.dll
                         // - Si no, compara output vs expected
@@ -625,8 +627,11 @@ app.MapPost("/validate-dataset", async (
                     var tempOutFile = Path.Combine(tempOutDir, $"output_{name}");
                     await File.WriteAllTextAsync(tempOutFile, stdout, Encoding.UTF8, cancellationToken);
 
+                    string directoryStudentCode = Path.GetDirectoryName(auxCodeStudentPath)!;
+                    Directory.CreateDirectory(directoryStudentCode);
+                    await File.WriteAllTextAsync(auxCodeStudentPath, input.Code, Encoding.UTF8, cancellationToken);
                     // Ejecutar el validador: dotnet run --project Validator/Validator.csproj input expected output
-                    var psi = new System.Diagnostics.ProcessStartInfo("dotnet", $"{validatorDll} \"{inputFile}\" \"{expectedFile}\" \"{tempOutFile}\"")
+                    var psi = new System.Diagnostics.ProcessStartInfo("dotnet", $"{validatorDll} \"{inputFile}\" \"{expectedFile}\" \"{tempOutFile}\" \"{auxCodeStudentPath}\"")
                     {
                         WorkingDirectory = validatorDir,
                         RedirectStandardOutput = true,
@@ -646,6 +651,10 @@ app.MapPost("/validate-dataset", async (
                     else if (proc.ExitCode == 0)
                     {
                         verdict = "Validator Error";
+                    }
+                    else if (proc.ExitCode == 1 && validatorOutput != "OK")
+                    {
+                        verdict = validatorOutput;
                     }
                     else
                     {
@@ -962,7 +971,7 @@ static async Task<bool> InvokeMainIfExists(CompositeKernel kernel, string code, 
         return false; // No hay Main(), no hacer nada
     }
 
-    // 🎯 Construir código de reflexión para invocar Main()
+    //  BOOKMARK: 🎯 Construir código de reflexión para invocar Main()
     // Usa BindingFlags.NonPublic para acceder a métodos privados
     string reflectionCode = 
         "var mainMethod = typeof(Program).GetMethod(\"Main\", " +
