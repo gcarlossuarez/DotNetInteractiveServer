@@ -61,6 +61,11 @@ var app = builder.Build();
 // === ⚠️ IMPORTANTE: CORS debe ir ANTES de los endpoints ===
 app.UseCors();
 
+// Frontend local sin dependencias externas.
+app.UseDefaultFiles();
+app.UseStaticFiles();
+app.MapGet("/datasets/{problemId}/inputs/{fileName}", (string problemId, string fileName) => DatasetInputs.Read(Path.Combine(AppContext.BaseDirectory, "Contests"), problemId, fileName));
+
 // ═══════════════════════════════════════════════════════════════
 // 📚 SECCIÓN 2: ENDPOINTS DEL API
 // ═══════════════════════════════════════════════════════════════

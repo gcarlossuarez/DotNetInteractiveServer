@@ -11,4 +11,5 @@
     <PackageReference Include="Microsoft.DotNet.Interactive.CSharp" Version="1.0.0-beta.25323.1" />
   </ItemGroup>
 
+  <ItemGroup><Compile Remove="tools/**/*.cs" /><Content Remove="tools/**" /><None Remove="tools/**" /></ItemGroup>
 </Project>
