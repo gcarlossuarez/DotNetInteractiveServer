@@ -1,4 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk.Web">
 <PropertyGroup><TargetFramework>net10.0</TargetFramework><ImplicitUsings>enable</ImplicitUsings><Nullable>enable</Nullable></PropertyGroup>
-<ItemGroup><Compile Include="../../DatasetInputs.cs" Link="DatasetInputs.cs" /></ItemGroup>
+<ItemGroup><Compile Include="../../DatasetInputs.cs" Link="DatasetInputs.cs" /><Compile Include="../../ProblemStatement.cs" Link="ProblemStatement.cs" /><Compile Include="../../EditorAccess.cs" Link="EditorAccess.cs" /><Compile Include="../../FileProblemRunner.cs" Link="FileProblemRunner.cs" /></ItemGroup>
 </Project>
+
+

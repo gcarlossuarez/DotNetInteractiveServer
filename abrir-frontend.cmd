@@ -2,7 +2,8 @@
 setlocal
 cd /d "%~dp0"
 set "EXAM_CONTESTS=%~1"
-if not defined EXAM_CONTESTS set "EXAM_CONTESTS=%USERPROFILE%\Downloads\DotNetInteractiveServer\Contests"
+if not defined EXAM_CONTESTS set "EXAM_CONTESTS=%~dp0Contests"
+if not exist "%EXAM_CONTESTS%" set "EXAM_CONTESTS=%USERPROFILE%\Downloads\DotNetInteractiveServer\Contests"
 where dotnet >nul 2>nul
 if errorlevel 1 (
  echo Se necesita .NET 10 SDK. Python no es necesario.
@@ -21,3 +22,4 @@ echo Casos: %EXAM_CONTESTS%
 echo Cierra esta ventana para detener solo el frontend.
 dotnet "tools\FrontendHost\bin\Debug\net10.0\FrontendHost.dll" --frontend-root "%CD%" --contests "%EXAM_CONTESTS%"
 pause
+

@@ -1,5 +1,10 @@
 # DotNetInteractiveServer
 
+## Guía del frontend local
+
+La guía en español de arranque, visor Word, consulta C# y bloqueo del portapapeles está en [docs/README.md](docs/README.md).
+
+
 C# Sandbox server based on Microsoft.DotNet.Interactive for executing and validating C# code dynamically.
 
 ## 📋 Requirements for Students

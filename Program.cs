@@ -64,6 +64,9 @@ app.UseCors();
 // Frontend local sin dependencias externas.
 app.UseDefaultFiles();
 app.UseStaticFiles();
+EditorAccess.Map(app);
+FileProblemRunner.Map(app, app.Environment.ContentRootPath, Path.Combine(AppContext.BaseDirectory, "Contests"));
+app.MapGet("/datasets/{problemId}/statement", (string problemId) => ProblemStatement.Read(Path.Combine(AppContext.BaseDirectory, "Contests"), problemId));
 app.MapGet("/datasets/{problemId}/inputs/{fileName}", (string problemId, string fileName) => DatasetInputs.Read(Path.Combine(AppContext.BaseDirectory, "Contests"), problemId, fileName));
 
 // ═══════════════════════════════════════════════════════════════
@@ -344,13 +347,13 @@ app.MapDelete("/datasets/{problemId}", (string problemId) =>
 });
 
 // ┌─────────────────────────────────────────────────────────────┐
-// │ 📚 BOOKMAR: ENDPOINT AVANZADO: /validate-dataset                     │
+// │ 📚 BOOKMAR: ENDPOINT AVANZADO: /validate-dataset            │
 // ├─────────────────────────────────────────────────────────────┤
 // │ Dual-mode endpoint: SSE streaming + JSON tradicional        │
 // │                                                             │
 // │ 🔀 MODO 1: SSE (Server-Sent Events)                         │
 // │    Accept: text/event-stream                                │
-// │    ┌──────┐      ┌──────┐      ┌──────┐                     │
+// │    ┌──────┐      ┌──────┐      ┌────────┐                   │
 // │    │start │  →   │case  │  →   │complete│                   │
 // │    │event │      │events│      │event   │                   │
 // │    └──────┘      └──────┘      └────────┘                   │
@@ -1032,3 +1035,5 @@ static class Extensions
 {
     public static Queue<T> ToQueue<T>(this IEnumerable<T> items) => new(items);
 }
+
+

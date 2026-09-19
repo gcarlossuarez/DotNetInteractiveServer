@@ -10,7 +10,10 @@ obj/
 .vscode/
 
 # Ignore dataset and temp files
-Contests/
+Contests/*/DataSet/
+Contests/*/.Expected/
+Contests/*/Output/
+
 *.tmp
 *.log
 
@@ -20,3 +23,4 @@ Src_DotNetInteractiveServer.zip
 # Ignore OS generated files
 .DS_Store
 Thumbs.db
+

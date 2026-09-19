@@ -1,0 +1,21 @@
+{
+  "problems": {
+    "Skorzeny": {
+      "inputMode": "file",
+      "inputDirectory": "Contests/Skorzeny/DataSet",
+      "outputDirectory": "Contests/Skorzeny/Output",
+      "outputPrefix": "Output_",
+      "outputMode": "console-batch",
+      "validatorPath": "Contests/Skorzeny/Validator"
+    },
+    "Prighozin": {
+      "inputMode": "file",
+      "inputDirectory": "Contests/Prighozin/DataSet",
+      "outputDirectory": "Contests/Prighozin/Output",
+      "outputPrefix": "Output_",
+      "outputMode": "console-batch",
+      "validatorPath": "Contests/Prighozin/Validator"
+    }
+  }
+}
+

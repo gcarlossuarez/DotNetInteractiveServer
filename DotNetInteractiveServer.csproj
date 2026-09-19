@@ -12,4 +12,11 @@
   </ItemGroup>
 
   <ItemGroup><Compile Remove="tools/**/*.cs" /><Content Remove="tools/**" /><None Remove="tools/**" /></ItemGroup>
+  <ItemGroup><Compile Remove="validators/**/*.cs" />
+  <Compile Remove="Contests/**/Validator/**/*.cs" /><Content Remove="validators/**" />
+  <Content Remove="Contests/**/Validator/**" /><None Remove="validators/**" />
+  <None Remove="Contests/**/Validator/**" /></ItemGroup>
 </Project>
+
+
+
