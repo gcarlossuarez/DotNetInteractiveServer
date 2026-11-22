@@ -1,0 +1,2 @@
+﻿True
+App de Banco, Juego de Puzzle, Mapas

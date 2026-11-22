@@ -1,0 +1,2 @@
+﻿True
+Banco, Libros, Cortana, Mensajes, Telefonia, Notas

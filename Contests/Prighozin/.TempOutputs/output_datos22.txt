@@ -1,0 +1,418 @@
+﻿Grupo Rossgvardia 1;1000;85
+Khimki;50;35
+Mytishchi;70;50
+Chechenos de Kadirov Unit;78;2
+Raduzhny;1;1
+Sil’tse;1;1
+Rossgvardia Unit;518;61
+Ozherelye;23;22
+Peresvet;2;2
+Pereyaslavl-Zalesskiy;4;3
+Slobodka;2;2
+Yartsevo;33;32
+Chechenos de Kadirov Unit;667;18
+Bronnitsy;4;3
+Istra;5;4
+Krasnogorsk;6;6
+Ruza;7;5
+Chechenos de Kadirov Unit;266;8
+Domodedovo;4;4
+Krasnogorsk;2;2
+Nakhabino;1;1
+Severny;1;1
+Rossgvardia Unit;437;54
+Fryazino;42;42
+Malakhovka;7;7
+Obukhovo;4;4
+Voskresenskoye;1;1
+Rossgvardia Unit;219;27
+Dedenevo;7;7
+Krasnoznamensk;12;12
+Kurovskoye;4;4
+Volokolamsk;2;2
+Yartsevo;2;2
+Rossgvardia Unit;624;77
+Bronnitsy;32;32
+Dedenevo;18;17
+Staraya Kupavna;26;26
+Voronovo;2;2
+Chechenos de Kadirov Unit;160;5
+Khimki;5;5
+Chechenos de Kadirov Unit;337;6
+Vnukovo;6;6
+Rossgvardia Unit;772;90
+Nakhabino;32;28
+Vereya;3;2
+Vnukovo;24;24
+Voskresensk;37;36
+Rossgvardia Unit;685;85
+Dedovsk;1;1
+Dubna;5;5
+Kratovo;11;11
+Kurovskoye;1;1
+Losino-Petrovsky;1;1
+Staraya Kupavna;40;40
+Voskresensk;6;6
+Zhukovsky;20;20
+Rossgvardia Unit;957;119
+Domodedovo;36;36
+Povarovo;34;34
+Yartsevo;49;49
+Chechenos de Kadirov Unit;341;11
+Istra;11;11
+Chechenos de Kadirov Unit;500;14
+Podolsk;11;9
+Taldom;5;5
+Rossgvardia Unit;834;98
+Kratovo;16;15
+Lobnya;10;10
+Podolsk;4;4
+Povarovo;22;22
+Sil’tse;41;37
+Voskresenskoye;8;8
+Zaraysk;2;2
+Chechenos de Kadirov Unit;485;16
+Aprelevka;3;3
+Maryino;1;1
+Pavlovsky Posad;1;1
+Vnukovo;1;1
+Vostryakovo;5;5
+Zaraysk;5;5
+Chechenos de Kadirov Unit;100;3
+Lyubertsy;2;2
+Ozherelye;1;1
+Rossgvardia Unit;265;32
+Aprelevka;11;11
+Malakhovka;8;7
+Shchelkovo;14;14
+Rossgvardia Unit;903;105
+Chernogolovka;1;1
+Dubna;41;38
+Ivanteevka;31;29
+Lobnya;1;1
+Yubileyny;38;36
+Rossgvardia Unit;504;57
+Kurovskoye;36;33
+Lobnya;12;10
+Nakhabino;7;7
+Orekhovo-Zuyevo;1;1
+Pereyaslavl-Zalesskiy;1;1
+Severny;1;1
+Vidnoye;3;3
+Volokolamsk;1;1
+Rossgvardia Unit;698;87
+Krasnogorsk;33;33
+Staraya Kupavna;7;7
+Troitsk;1;1
+Tuchkovo;46;46
+Rossgvardia Unit;548;55
+Kubinka;16;9
+Kurovskoye;39;37
+Tuchkovo;3;3
+Vysokovsk;9;6
+Chechenos de Kadirov Unit;117;3
+Dubna;3;3
+Rossgvardia Unit;551;29
+Kurovskoye;40;14
+Yubileyny;23;15
+Chechenos de Kadirov Unit;756;25
+Kozhukhovo;2;2
+Kubinka;3;3
+Noginsk;1;1
+Povarovo;1;1
+Ruza;16;16
+Vereya;2;2
+Rossgvardia Unit;815;101
+Bol’shie Vyazemy;28;28
+Istra;36;36
+Serpukhov;4;4
+Zvenigorod;33;33
+Rossgvardia Unit;435;53
+Kratovo;13;12
+Lukhovitsy;18;18
+Odintsovo;16;16
+Sergiyev Posad;5;5
+Vostryakovo;2;2
+Chechenos de Kadirov Unit;235;7
+Sofrino;3;3
+Volokolamsk;4;4
+Rossgvardia Unit;434;36
+Golitsyno;36;36
+Rossgvardia Unit;253;30
+Bol’shie Vyazemy;3;3
+Severny;1;1
+Staraya Kupavna;27;26
+Rossgvardia Unit;851;21
+Lyubertsy;3;3
+Protvino;41;3
+Vostryakovo;15;7
+Zaraysk;17;8
+Chechenos de Kadirov Unit;994;31
+Kashira;28;26
+Kurovskoye;4;4
+Odintsovo;1;1
+Chechenos de Kadirov Unit;988;32
+Vereya;1;1
+Voskresenskoye;25;25
+Yubileyny;6;6
+Rossgvardia Unit;205;22
+Istra;9;8
+Khimki;4;3
+Kozhukhovo;1;1
+Pereyaslavl-Zalesskiy;9;8
+Sil’tse;2;2
+Rossgvardia Unit;670;82
+Dubna;45;44
+Kolomna;22;22
+Raduzhny;2;2
+Zvenigorod;14;14
+Rossgvardia Unit;878;102
+Kozhukhovo;39;38
+Krasnozavodsk;25;25
+Stupino;33;29
+Zaraysk;12;10
+Rossgvardia Unit;818;97
+Istra;49;49
+Ruza;48;43
+Serpukhov;5;5
+Chechenos de Kadirov Unit;401;13
+Obukhovo;12;12
+Peresvet;1;1
+Rossgvardia Unit;881;109
+Bronnitsy;47;46
+Domodedovo;2;2
+Kozhukhovo;4;4
+Kurovskoye;28;28
+Peresvet;29;29
+Rossgvardia Unit;475;57
+Chernogolovka;4;4
+Dolgoprudny;1;1
+Lukhovitsy;30;28
+Serpukhov;3;3
+Sil’tse;1;1
+Volokolamsk;10;10
+Zheleznodorozhny;10;10
+Chechenos de Kadirov Unit;206;6
+Krasnoznamensk;6;6
+Chechenos de Kadirov Unit;112;3
+Korolyov;3;3
+Rossgvardia Unit;576;71
+Domodedovo;35;34
+Khimki;10;10
+Kratovo;5;5
+Mozhaysk;16;16
+Pereyaslavl-Zalesskiy;6;6
+Rossgvardia Unit;765;95
+Lukhovitsy;49;49
+Ozherelye;5;5
+Pavlovsky Posad;5;5
+Zheleznodorozhny;36;36
+Chechenos de Kadirov Unit;253;8
+Kurovskoye;1;1
+Peresvet;3;3
+Vereya;4;4
+Rossgvardia Unit;215;22
+Krasnoznamensk;1;1
+Ozherelye;20;18
+Vysokovsk;3;3
+Rossgvardia Unit;807;90
+Chekhov;8;7
+Istra;33;31
+Malakhovka;3;3
+Novlyanskoye;8;7
+Povarovo;1;1
+Ramenskoye;8;5
+Zhukovsky;38;36
+Chechenos de Kadirov Unit;934;31
+Kashira;19;19
+Losino-Petrovsky;12;12
+Chechenos de Kadirov Unit;851;21
+Likino-Dulyovo;23;21
+Chechenos de Kadirov Unit;299;9
+Lyubertsy;9;9
+Rossgvardia Unit;238;26
+Elektrogorsk;3;3
+Kratovo;26;23
+Chechenos de Kadirov Unit;215;7
+Khimki;1;1
+Lobnya;4;4
+Yubileyny;2;2
+Rossgvardia Unit;254;29
+Bol’shie Vyazemy;6;4
+Chernogolovka;25;25
+Rossgvardia Unit;670;80
+Krasnozavodsk;20;20
+Krasnoznamensk;31;29
+Vereya;18;17
+Volokolamsk;14;14
+Rossgvardia Unit;462;56
+Fryazino;4;4
+Kurovskoye;19;19
+Vereya;16;15
+Volokolamsk;18;18
+Chechenos de Kadirov Unit;54;0
+Rossgvardia Unit;362;45
+Krasnozavodsk;1;1
+Kubinka;29;29
+Kurovskoye;15;15
+Rossgvardia Unit;313;39
+Ivanteevka;1;1
+Khotkovo;13;13
+Vysokovsk;25;25
+Chechenos de Kadirov Unit;361;5
+Zvenigorod;10;5
+Chechenos de Kadirov Unit;277;8
+Dubna;8;8
+Rossgvardia Unit;583;50
+Aprelevka;19;13
+Bol’shie Vyazemy;28;21
+Bronnitsy;3;1
+Dedenevo;13;12
+Dedovsk;3;3
+Rossgvardia Unit;671;82
+Aprelevka;2;2
+Bronnitsy;1;1
+Malakhovka;48;48
+Vysokovsk;17;17
+Yakhroma;15;14
+Chechenos de Kadirov Unit;276;9
+Dedenevo;4;4
+Klin;5;5
+Rossgvardia Unit;283;33
+Obukhovo;4;4
+Orekhovo-Zuyevo;28;28
+Zheleznodorozhny;3;1
+Rossgvardia Unit;746;90
+Chekhov;30;30
+Pavlovsky Posad;25;24
+Reutov;21;20
+Ruza;2;2
+Yegoryevsk;1;1
+Zhukovsky;14;13
+Chechenos de Kadirov Unit;437;14
+Ivanteevka;6;6
+Vidnoye;1;1
+Zhukovsky;7;7
+Rossgvardia Unit;288;34
+Domodedovo;21;20
+Mytishchi;15;14
+Chechenos de Kadirov Unit;389;9
+Kolomna;7;5
+Voskresensk;5;4
+Rossgvardia Unit;212;20
+Yegoryevsk;20;20
+Chechenos de Kadirov Unit;854;28
+Bronnitsy;2;2
+Chernogolovka;24;24
+Vereya;2;2
+Rossgvardia Unit;206;24
+Solnechnogorsk;1;1
+Vnukovo;23;23
+Chechenos de Kadirov Unit;152;4
+Kratovo;2;2
+Ramenskoye;1;1
+Severny;2;1
+Chechenos de Kadirov Unit;815;27
+Khimki;1;1
+Vidnoye;26;26
+Chechenos de Kadirov Unit;89;0
+Chechenos de Kadirov Unit;992;27
+Raduzhny;9;4
+Reutov;22;22
+Staraya Kupavna;2;1
+Rossgvardia Unit;122;15
+Troitsk;15;15
+Rossgvardia Unit;873;96
+Chekhov;3;1
+Kolomna;20;20
+Odintsovo;23;16
+Ramenskoye;14;14
+Vereya;11;11
+Voskresensk;35;31
+Zheleznodorozhny;3;3
+Rossgvardia Unit;562;70
+Kurovskoye;34;34
+Lukhovitsy;2;2
+Troitsk;4;4
+Zheleznodorozhny;30;30
+Rossgvardia Unit;142;15
+Dedovsk;1;1
+Vysokovsk;16;14
+Chechenos de Kadirov Unit;325;10
+Elektrogorsk;8;8
+Obukhovo;2;2
+Chechenos de Kadirov Unit;217;6
+Klin;2;1
+Reutov;5;5
+Chechenos de Kadirov Unit;972;31
+Kozhukhovo;7;7
+Likino-Dulyovo;2;2
+Solnechnogorsk;23;22
+Chechenos de Kadirov Unit;266;8
+Kurovskoye;4;4
+Shchelkovo;4;4
+Chechenos de Kadirov Unit;633;19
+Bol’shie Vyazemy;15;14
+Krasnoznamensk;3;3
+Slobodka;2;2
+Chechenos de Kadirov Unit;759;20
+Yartsevo;22;20
+Chechenos de Kadirov Unit;969;31
+Khimki;2;2
+Severny;16;16
+Slobodka;8;7
+Zhukovsky;6;6
+Chechenos de Kadirov Unit;85;2
+Obukhovo;1;1
+Taldom;1;1
+Chechenos de Kadirov Unit;975;20
+Kozhukhovo;22;18
+Roshal;7;2
+Rossgvardia Unit;491;55
+Krasnoarmeysk;11;11
+Novlyanskoye;49;44
+Rossgvardia Unit;313;39
+Skhodnya;7;7
+Solnechnogorsk;1;1
+Yegoryevsk;31;31
+Chechenos de Kadirov Unit;709;23
+Ivanteevka;1;1
+Kashira;1;1
+Vnukovo;21;21
+Rossgvardia Unit;599;74
+Protvino;9;9
+Ramenskoye;3;3
+Sil’tse;41;41
+Solnechnogorsk;8;8
+Troitsk;1;1
+Volokolamsk;12;12
+Rossgvardia Unit;719;89
+Likino-Dulyovo;46;46
+Lukino;11;11
+Tuchkovo;32;32
+Chechenos de Kadirov Unit;628;20
+Dedovsk;5;5
+Golitsyno;7;7
+Peresvet;4;4
+Ramenskoye;1;1
+Skhodnya;3;3
+Chechenos de Kadirov Unit;920;29
+Kratovo;29;29
+Chechenos de Kadirov Unit;177;5
+Mytishchi;4;4
+Ozherelye;1;1
+Rossgvardia Unit;71;5
+Novoivanovskoye;7;5
+Chechenos de Kadirov Unit;686;9
+Elektrogorsk;7;6
+Noginsk;3;2
+Vidnoye;1;1
+Chechenos de Kadirov Unit;188;3
+Ruza;4;3
+Rossgvardia Unit;476;58
+Dedenevo;43;43
+Ivanteevka;1;1
+Lukhovitsy;11;11
+Zaraysk;4;3
+Chechenos de Kadirov Unit;407;13
+Peresvet;13;13
